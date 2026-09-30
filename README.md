@@ -76,12 +76,21 @@ WebContainer 依赖 SharedArrayBuffer 和跨源隔离；部署后可在浏览器
 
 ## 开发与验证
 
+可复现的自动测试使用 Node.js **22.23.2**（CI 版本）和 Playwright 随包安装的 Chromium，无需系统 Chrome、真实 API Key 或预先启动服务器：
+
 ```bash
-npm run build
-node --experimental-strip-types scripts/context-smoke.mjs
+npm ci --cache node_modules/.cache/npm --no-audit --no-fund
+npm run test:browser:install
+npm test
 ```
 
-下面的浏览器烟测需要先运行 `npm run dev`，并在本机安装 Chrome：
+Linux CI 安装浏览器时使用 `npm run test:browser:install -- --with-deps`。`npm test` 运行上下文单元测试、TypeScript 检查、生产构建和浏览器测试；也可以分别运行 `npm run test:context` 或 `npm run test:browser`（后者会先构建）。浏览器下载位置为本仓库的 `node_modules/.cache/ms-playwright`。
+
+浏览器测试自行启动随机本地端口的 Vite dev / production preview，检查两者实际返回的 COOP/COEP 与 `crossOriginIsolated`。交互测试在测试服务器中将 WebContainer 替换为内存文件系统和固定命令响应，模拟 DeepSeek SSE；真实 UI、Pi SDK、Agent Loop、工具、localStorage 和 IndexedDB 仍运行。覆盖连接与工具循环、会话和文件刷新恢复、连接/对话模块 504 后的一次刷新恢复，以及摘要检查点保存和刷新后复用。外部网络默认阻断，只有模拟 API 路由返回响应。
+
+这套测试不证明真实 WebContainer 引导、Node.js 命令执行、服务商认证/额度/CORS 或生产托管配置可用。生产源码与构建不包含测试替身，未添加密钥代理。CI 配置见 [.github/workflows/ci.yml](.github/workflows/ci.yml)。
+
+以下旧的手动探针另需运行 `npm run dev`，并在本机安装 Chrome；它们不属于自动测试或 CI：
 
 | 命令 | 检查内容 |
 | --- | --- |

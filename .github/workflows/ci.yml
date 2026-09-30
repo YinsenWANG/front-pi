@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.23.2
+      - run: npm ci --cache node_modules/.cache/npm --no-audit --no-fund
+      - run: npm run test:browser:install -- --with-deps
+      - run: npm test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-failure-artifacts
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

@@ -6,7 +6,11 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host 127.0.0.1"
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "npm run test:context && npm run test:browser",
+    "test:context": "node --experimental-strip-types --test tests/context.test.mjs",
+    "test:browser": "npm run build && node --test --test-concurrency=1 tests/browser.test.mjs",
+    "test:browser:install": "node scripts/install-browser.mjs"
   },
   "license": "Apache-2.0",
   "dependencies": {
